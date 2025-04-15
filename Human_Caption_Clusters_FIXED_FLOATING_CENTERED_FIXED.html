@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Human Caption Clusters</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #ffffff;
+      color: #111;
+    }
+    .scrolly {
+      position: relative;
+    }
+    .step {
+      padding: 2rem;
+      font-size: 1.25rem;
+      max-width: 700px;
+      margin: 0 auto;
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-content {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 600px;
+      width: fit-content;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-content img {
+      max-width: 40%;
+      height: auto;
+      margin: 0;
+      border-radius: 4px;
+    }
+
+    .step-content p {
+      margin: 0;
+      padding: 0;
+      line-height: 1.4;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+    }
+    #tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 14px;
+      display: none;
+      max-width: 300px;
+    }
+    #cluster-label {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #f4f4f4;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-weight: bold;
+    }
+    .scrolly-container {
+      position: relative;
+      width: 100%;
+      margin: 2rem 0;
+      min-height: 100vh;
+    }
+
+    .sticky-thing {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+      z-index: 1;
+    }
+
+    .sticky-thing img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+    }
+
+    .steps-container {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .step {
+      margin: 0 auto 100vh;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      position: relative;
+      z-index: 3;
+    }
+
+    .step.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .step p {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="viz"></canvas>
+  <div id="tooltip"></div>
+  <div id="cluster-label"></div>
+
+  <div class="scrolly-container">
+    <div class="scrolly">
+      <div class="step" data-frame="0"><div class="step-content">We analyzed over 2 million New Yorker captions and chose only the top funnitest captions by votes to find out what makes a line land.</div></div>
+      <div class="step" data-frame="1"><div class="step-content">Each square is a caption. Position reflects vote score and variance.</div></div>
+      <div class="step" data-frame="2">
+        <div class="step-content">
+          <img src="895_Dashboard.jpg" alt="Dashboard visualization">
+          <p>Contest 895:"If they know where we are, then they're more advanced than we thought."</p>
+        </div>
+      </div>
+      <div class="step" data-frame="3">
+        <div class="step-content">
+          <img src="890_Dashboard.jpg" alt="Dashboard visualization">
+          <p>Contest 890:"This restaurant has only 5 stars"</p>
+        </div>
+      </div>
+      <div class="step" data-frame="4">
+        <div class="step-content">
+          <img src="652_Dashboard.jpg" alt="Dashboard visualization">
+          <p>Contest 652:"See any Lifesavers?"</p>
+        </div>
+      </div></div>
+      <div class="step" data-frame="5">
+        <div class="step-content">
+          <img src="512_Dashboard.jpg" alt="Dashboard visualization">
+          <p>Contest 512: "I get it: you're angry with the donor-class Yoga establishment."</p>
+        </div>
+      </div>
+      <div class="step" data-frame="6">
+        <div class="step-content">
+          <img src="773_Dashboard.jpg" alt="Dashboard visualization">
+          <p>>Contest 773: "I guess I should have said "cheers" instead of "bottoms up.""</p>
+        </div>
+      </div>
+      <div class="step" data-frame="7">
+        <div class="step-content">
+          <img src="783_Dashboard.jpg" alt="Dashboard visualization">
+          <p>>Contest 783: "It's perfectly normal to feel depressed around the hollandaise."</p>
+        </div>
+      </div>
+      <div class="step" data-frame="8">
+        <div class="step-content">
+          <img src="605_Dashboard.jpg" alt="Dashboard visualization">
+          <p>>Contest 605: "We're in the lower floor of IKEA....where are you?"</p>
+        </div>
+      </div>
+      <div class="step" data-frame="9">
+        <div class="step-content">
+          <img src="625_Dashboard.jpg" alt="Dashboard visualization">
+          <p>>Contest 625: "How long you been with the club?"</p>
+        </div>
+      </div>
+      <div class="step" data-frame="10">
+        <div class="step-content">
+          <img src="605_Dashboard.jpg" alt="Dashboard visualization">
+          <p>>Contest 605: "Due to NEA budget cuts, the painting you would have seen here will be described by my wife, Ethel, her sister, Irene, and myself."</p>
+        </div>
+      </div>
+      <div class="step" data-frame="11">
+        <div class="step-content">
+          <img src="761_Dashboard.jpg" alt="Dashboard visualization">
+          <p>>Contest 761: "He said he's welcoming us to the neighborhood. Do you remember moving?"</p>
+        </div>
+      </div>
+      <div class="step" data-frame="12"><div class="step-content">Each cluster has a tone, a style, a rhythm — and an audience. Context completes the joke.</div></div>
+    </div>
+  </div>
+  
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
+  <script>
+    const canvas = document.getElementById("viz");
+    const context = canvas.getContext("2d");
+    const tooltip = document.getElementById("tooltip");
+    const clusterLabel = document.getElementById("cluster-label");
+    const clusterNames = [
+      "Wry Observations", "Grim Irony", "Food & Death", "Playful Absurdity", "Satirical Bureaucracy",
+      "Urban Dread", "Medical Sarcasm", "Death Courtroom", "Anthropomorphic Chaos", "Legal Fatalism"
+    ];
+  
+    let dataFrames = [];
+    let dots = [];
+    let currentFrame = 0;
+    const dotSize = 8;
+  
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  
+    function drawDots(interp = false) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      dots.forEach(dot => {
+        dot.x += (dot.tx - dot.x) * 0.2;
+        dot.y += (dot.ty - dot.y) * 0.2;
+        dot.opacity += (dot.tOpacity - dot.opacity) * 0.2;
+        dot.color = dot.highlight ? clusterColors[dot.cluster] : "#ccc";
+  
+        context.globalAlpha = dot.opacity;
+        context.fillStyle = dot.color;
+        context.fillRect(dot.x * canvas.width - dotSize / 2, dot.y * canvas.height - dotSize / 2, dotSize, dotSize);
+      });
+      context.globalAlpha = 1;
+      if (interp) requestAnimationFrame(() => drawDots(true));
+    }
+  
+    const clusterColors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"];
+  
+    function updateFrame(index) {
+      currentFrame = index;
+      const targetDots = dataFrames[index];
+  
+      clusterLabel.textContent = (index >= 2 && index <= 11)
+        ? `Cluster ${index - 2}: ${clusterNames[index - 2]}`
+        : "";
+        if (dots.length !== targetDots.length) {
+      dots = targetDots.map(d => ({
+        ...d,
+        x: d.x,
+        y: d.y,
+        tx: d.x,
+        ty: d.y,
+        opacity: d.highlight ? 1 : 0.3,
+        tOpacity: d.highlight ? 1 : 0.3,
+        highlight: d.highlight,
+        caption: d.caption,
+        cluster: d.cluster
+      }));
+    } else {
+      targetDots.forEach((d, i) => {
+        dots[i].tx = d.x;
+        dots[i].ty = d.y;
+        dots[i].tOpacity = d.highlight ? 1 : 0.3;
+        dots[i].highlight = d.highlight;
+        dots[i].caption = d.caption;
+        dots[i].cluster = d.cluster;
+      });
+    }
+
+
+      drawDots(true);
+    }
+  
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) / canvas.width;
+      const my = (e.clientY - rect.top) / canvas.height;
+  
+      let found = false;
+      dots.forEach(dot => {
+        const dx = dot.x - mx;
+        const dy = dot.y - my;
+        if (Math.sqrt(dx * dx + dy * dy) < 0.01) {
+          tooltip.style.left = `${e.clientX + 10}px`;
+          tooltip.style.top = `${e.clientY + 10}px`;
+          tooltip.innerHTML = dot.caption;
+          tooltip.style.display = "block";
+          found = true;
+        }
+      });
+      if (!found) tooltip.style.display = "none";
+    });
+
+    function setupScroll() {
+      const scroller = scrollama();
+      scroller
+        .setup({ 
+          step: ".step", 
+          offset: 0.5 
+        })
+        .onStepEnter((response) => {
+          const frameIndex = +response.element.dataset.frame;
+          updateFrame(frameIndex);
+          
+          // Add active class to current step
+          response.element.classList.add('active');
+          
+          // Remove active class from other steps
+          document.querySelectorAll('.step').forEach(step => {
+            if (step !== response.element) {
+              step.classList.remove('active');
+            }
+          });
+        })
+        .onStepExit((response) => {
+          response.element.classList.remove('active');
+        });
+    }
+
+  
+    fetch("human_clusters_scroll_frames_v3_REBUILT.json")
+      .then(res => res.json())
+      .then(json => {
+        dataFrames = json;
+        console.log("Loaded", dataFrames.length, "frames");
+        resizeCanvas();
+        updateFrame(0);
+        setupScroll();
+      })
+      .catch(err => console.error("Failed to load JSON:", err));
+  
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      updateFrame(currentFrame);
+    });
+  </script>
+  
+</body>
+</html>

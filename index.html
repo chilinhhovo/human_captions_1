@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Narrative Dot Story</title>
+  <!-- Google fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <!-- Add Perfectly Nineties font for quotes -->
+  <style>
+    @font-face {
+      font-family: 'Perfectly Nineties';
+      src: url('https://fonts.cdnfonts.com/css/perfectly-nineties') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+  
+    body { 
+      margin: 0; 
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: white; 
+      overflow-x: hidden;
+      font-size: 20px;
+      text-rendering: optimizeLegibility;
+      line-height: 1.6;
+    }
+
+    .full-width-container {
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 0;
+    }
+
+    .content-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .content-container {
+        padding: 0 1rem;
+      }
+      
+      body {
+        font-size: 18px;
+      }
+    }
+
+    h1, h2 {
+      margin: 2rem 0 1rem;
+      line-height: 1.3;
+    }
+
+    p {
+      margin: 1rem 0;
+    }
+
+    .byline {
+      color: #666;
+      font-size: 0.9em;
+      margin: 0.5rem 0;
+    }
+
+    .visualization-link {
+      display: inline-block;
+      margin: 2rem 0;
+      padding: 1rem 2rem;
+      background: #f0f0f0;
+      border-radius: 4px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .visualization-link:hover {
+      background: #e0e0e0;
+    }
+
+    blockquote {
+      margin: 2rem 0;
+      padding: 1rem;
+      border-left: 4px solid #ccc;
+      font-style: italic;
+      color: #444;
+    }
+
+    /* Responsive images */
+    img {
+      max-width: 100%;
+      height: auto;
+      margin: 1rem 0;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .content-container {
+        padding: 0 1rem;
+      }
+      
+      h1 {
+        font-size: 1.8em;
+      }
+      
+      h2 {
+        font-size: 1.4em;
+      }
+      
+      .visualization-link {
+        display: block;
+        text-align: center;
+        margin: 1.5rem 0;
+        padding: 0.8rem 1.5rem;
+      }
+    }
+
+    /* Scrolly styles */
+    .scrolly {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+    }
+
+    .step {
+      margin-bottom: 80vh;
+      opacity: 0;
+      height: 0.5px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .step-content {
+      opacity: 1;
+      font-size: 1.25rem;
+      line-height: 1.5;
+      position: relative;
+      z-index: 3;
+    }
+
+    .overlay-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 600px;
+      max-height: 300px;
+      display: inline-block;
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .overlay-box.visible {
+      opacity: 1;
+    }
+
+    #scroll-text {
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: #111;
+      line-height: 1.6;
+      opacity: 0;
+      position: relative;
+      width: 100%;
+      height: auto;
+      background: transparent;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+
+    #scroll-text.visible {
+      opacity: 1;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: auto;
+    }
+
+    canvas.visible {
+      opacity: 1;
+    }
+
+    /* Rest of your existing styles... */
+  </style>
+  <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
+</head>
+<body>
+
+  <!-- Contest explanation section -->
+  <div class="full-width-container">
+    <div class="content-container">
+      <p class="byline">14 April 2025</p>
+      <h1>What Makes a Caption Funny?</h1>
+      <p class="byline">A Data-Driven Look Inside the New Yorker Caption Contest Laughter</p>
+      <p class="byline">By <a href="https://chilinhhovo.github.io/portfolio/">Chi Vo</a></p>
+      <p>More than 4,000 captions for just one contest. Across 385 contests and 2.3 million votes, the verdict is clear: while judges may disagree, the ingredients of humor remain surprisingly consistent.</p> 
+      <h2> Funny = Brevity + Surprise + Truth </h2>
+      <p>We'll start by visualizing how human-written captions are rated—across the categories of "funny," "somewhat funny," and "not funny." While responses span the spectrum, one thing stands out: truly funny votes are rare. Most captions receive a mix of praise and criticism. The verdict? People are tough critics—and making them laugh is no easy feat.</p>
+    </div>
+  </div>
+
+  <!-- Vote distribution visualization -->
+  <div class="full-width-container">
+    <div class="content-container">
+      <div class="visualization-container">
+        <!-- Generated by ai2html v0.121.1 - 2025-04-14 02:39 -->
+        <!-- ai file: template (2).ai -->
+  <style media="screen,print">
+          #g-template-_2_-box,
+          #g-template-_2_-box .g-artboard {
+      margin:0 auto;
+    }
+          #g-template-_2_-box p {
+      margin:0;
+    }
+          #g-template-_2_-box .g-aiAbs {
+      position:absolute;
+    }
+          #g-template-_2_-box .g-aiImg {
+      position:absolute;
+      top:0;
+      display:block;
+      width:100% !important;
+    }
+          #g-template-_2_-box .g-aiSymbol {
+      position: absolute;
+      box-sizing: border-box;
+    }
+          #g-template-_2_-box .g-aiPointText p { white-space: nowrap; }
+          #g-template-_2_-full {
+            position:relative;
+            overflow:hidden;
+          }
+          #g-template-_2_-full p {
+            font-weight:regular;
+            line-height:16px;
+            opacity:1;
+            letter-spacing:0em;
+            font-size:14px;
+            text-align:left;
+            color:rgb(0,0,0);
+            text-transform:none;
+            padding-bottom:0;
+            padding-top:0;
+            mix-blend-mode:normal;
+            font-style:normal;
+            height:auto;
+            position:static;
+          }
+          #g-template-_2_-full .g-pstyle0 {
+            font-weight:500;
+          }
+          #g-template-_2_-medium {
+            position:relative;
+            overflow:hidden;
+          }
+          #g-template-_2_-medium p {
+            font-weight:regular;
+            line-height:16px;
+            opacity:1;
+            letter-spacing:0em;
+            font-size:14px;
+            text-align:left;
+            color:rgb(0,0,0);
+            text-transform:none;
+            padding-bottom:0;
+            padding-top:0;
+            mix-blend-mode:normal;
+            font-style:normal;
+            height:auto;
+            position:static;
+          }
+          #g-template-_2_-medium .g-pstyle0 {
+            font-weight:500;
+          }
+          #g-template-_2_-mobile {
+      position:relative;
+      overflow:hidden;
+    }
+          #g-template-_2_-mobile p {
+      font-weight:regular;
+            line-height:16px;
+      opacity:1;
+      letter-spacing:0em;
+            font-size:14px;
+      text-align:left;
+      color:rgb(0,0,0);
+      text-transform:none;
+      padding-bottom:0;
+      padding-top:0;
+      mix-blend-mode:normal;
+      font-style:normal;
+      height:auto;
+      position:static;
+    }
+          #g-template-_2_-mobile .g-pstyle0 {
+      font-weight:500;
+    }
+          #g-template-_2_-mobile .g-pstyle1 {
+            font-weight:500;
+            text-align:center;
+          }
+  </style>
+
+        <div id="g-template-_2_-box" class="ai2html ai2html-responsive">
+          <!-- Artboard: full -->
+          <div id="g-template-_2_-full" class="g-artboard" style="width:700px; height:425px;" data-aspect-ratio="1.647" data-min-width="700">
+            <div style=""></div>
+            <img id="g-template-_2_-full-img" class="g-template-_2_-full-img g-aiImg" alt="" src="template-_2_-full.png"/>
+            <div id="g-ai0-1" class="g-ai2html-settings g-aiAbs" style="top:3.2941%;left:10.1471%;width:12.1429%;">
+              <p class="g-pstyle0">Out of all the votes, 72% were voted unfunny </p>
+            </div>
+            <div id="g-ai0-2" class="g-ai2html-settings g-aiAbs" style="top:67.7647%;left:82.3933%;width:12.1429%;">
+              <p class="g-pstyle0">8% were &lsquo;funny&rsquo; votes </p>
+            </div>
+            <div id="g-ai0-3" class="g-ai2html-settings g-aiAbs" style="top:76.7059%;left:10.1471%;width:12.1429%;">
+              <p class="g-pstyle0">20% were &lsquo;somewhat funny&rsquo; votes </p>
+            </div>
+          </div>
+
+          <!-- Artboard: medium -->
+          <div id="g-template-_2_-medium" class="g-artboard" style="width:490px; height:350px;" data-aspect-ratio="1.4" data-min-width="490" data-max-width="699">
+            <div style=""></div>
+            <img id="g-template-_2_-medium-img" class="g-template-_2_-medium-img g-aiImg" alt="" src="template-_2_-medium.png"/>
+            <div id="g-ai1-1" class="g-ai2html-settings g-aiAbs" style="top:10.2857%;left:4.3551%;width:17.3469%;">
+        <p class="g-pstyle0">Out of all the votes, 72% were voted unfunny </p>
+      </div>
+            <div id="g-ai1-2" class="g-ai2html-settings g-aiAbs" style="top:66%;left:85.7272%;width:11.4286%;">
+        <p class="g-pstyle0">8% were &lsquo;funny&rsquo; votes </p>
+      </div>
+            <div id="g-ai1-3" class="g-ai2html-settings g-aiAbs" style="top:76.5714%;left:4.3551%;width:17.3469%;">
+        <p class="g-pstyle0">20% were &lsquo;somewhat funny&rsquo; votes </p>
+      </div>
+    </div>
+
+          <!-- Artboard: mobile -->
+          <div id="g-template-_2_-mobile" class="g-artboard" style="max-width: 375px;max-height: 561px" data-aspect-ratio="0.669" data-min-width="0" data-max-width="489">
+            <div style="padding: 0 0 149.5467% 0;"></div>
+            <img id="g-template-_2_-mobile-img" class="g-template-_2_-mobile-img g-aiImg" alt="" src="template-_2_-mobile.png"/>
+            <div id="g-ai2-1" class="g-ai2html-settings g-aiAbs" style="top:2.4964%;left:12.4906%;width:80.2667%;">
+              <p class="g-pstyle0">Out of all the votes, 72% were voted unfunny </p>
+            </div>
+            <div id="g-ai2-2" class="g-ai2html-settings g-aiAbs" style="top:57.2397%;left:51.424%;margin-left:-41.8667%;width:83.7333%;">
+              <p class="g-pstyle1">20% were &lsquo;somewhat funny&rsquo; votes </p>
+            </div>
+            <div id="g-ai2-3" class="g-ai2html-settings g-aiAbs" style="top:80.7775%;left:49.7333%;margin-left:-42%;width:84%;">
+              <p class="g-pstyle1">8% were &lsquo;funny&rsquo; votes </p>
+            </div>
+          </div>
+        </div>
+
+        <script type="text/javascript">
+          (function (containerId, opts) {
+            var nameSpace = opts.namespace || '';
+            var containers = findContainers(containerId);
+            containers.forEach(resize);
+
+            function resize(container) {
+              var onResize = throttle(update, 200);
+              var waiting = !!window.IntersectionObserver;
+              var observer;
+              update();
+
+              document.addEventListener('DOMContentLoaded', update);
+              window.addEventListener('resize', onResize);
+
+              // NYT Scoop-specific code
+              if (opts.setup) {
+                opts.setup(container).on('cleanup', cleanup);
+              }
+
+              function cleanup() {
+                document.removeEventListener('DOMContentLoaded', update);
+                window.removeEventListener('resize', onResize);
+                if (observer) observer.disconnect();
+              }
+
+              function update() {
+                var artboards = selectChildren('.' + nameSpace + 'artboard[data-min-width]', container),
+                    width = Math.round(container.getBoundingClientRect().width);
+
+                // Set artboard visibility based on container width
+                artboards.forEach(function(el) {
+                  var minwidth = el.getAttribute('data-min-width'),
+                      maxwidth = el.getAttribute('data-max-width');
+                  if (+minwidth <= width && (+maxwidth >= width || maxwidth === null)) {
+                    if (!waiting) {
+                      selectChildren('.' + nameSpace + 'aiImg', el).forEach(updateImgSrc);
+                      selectChildren('video', el).forEach(updateVideoSrc);
+                    }
+                    el.style.display = 'block';
+                  } else {
+                    el.style.display = 'none';
+                  }
+                });
+
+                // Initialize lazy loading on first call
+                if (waiting && !observer) {
+                  if (elementInView(container)) {
+                    waiting = false;
+                    update();
+                  } else {
+                    observer = new IntersectionObserver(onIntersectionChange, {rootMargin: "800px"});
+                    observer.observe(container);
+                  }
+                }
+              }
+
+              function onIntersectionChange(entries) {
+                // There may be multiple entries relating to the same container
+                // (captured at different times)
+                var isIntersecting = entries.reduce(function(memo, entry) {
+                  return memo || entry.isIntersecting;
+                }, false);
+                if (isIntersecting) {
+                  waiting = false;
+                  // update: don't remove -- we need the observer to trigger an update
+                  // when a hidden map becomes visible after user interaction
+                  // (e.g. when an accordion menu or tab opens)
+                  // observer.disconnect();
+                  // observer = null;
+                  update();
+                }
+              }
+            }
+
+            function findContainers(id) {
+              // support duplicate ids on the page
+              return selectChildren('.ai2html-responsive', document).filter(function(el) {
+                if (el.getAttribute('id') != id) return false;
+                if (el.classList.contains('ai2html-resizer')) return false;
+                el.classList.add('ai2html-resizer');
+                return true;
+              });
+            }
+
+            // Replace blank placeholder image with actual image
+            function updateImgSrc(img) {
+              var src = img.getAttribute('data-src');
+              if (src && img.getAttribute('src') != src) {
+                img.setAttribute('src', src);
+              }
+            }
+
+            function updateVideoSrc(el) {
+              var src = el.getAttribute('data-src');
+              if (src && !el.hasAttribute('src')) {
+                el.setAttribute('src', src);
+              }
+            }
+
+            function elementInView(el) {
+              var bounds = el.getBoundingClientRect();
+              return bounds.top < window.innerHeight && bounds.bottom > 0;
+            }
+
+            function selectChildren(selector, parent) {
+              return parent ? Array.prototype.slice.call(parent.querySelectorAll(selector)) : [];
+            }
+
+            // based on underscore.js
+            function throttle(func, wait) {
+              var timeout = null, previous = 0;
+              function run() {
+                  previous = Date.now();
+                  timeout = null;
+                  func();
+              }
+              return function() {
+                var remaining = wait - (Date.now() - previous);
+                if (remaining <= 0 || remaining > wait) {
+                  clearTimeout(timeout);
+                  run();
+                } else if (!timeout) {
+                  timeout = setTimeout(run, remaining);
+                }
+              };
+            }
+          })("g-template-_2_-box", {namespace: "g-", setup: window.setupInteractive || window.getComponent});
+        </script>
+        <!-- End ai2html - 2025-04-14 02:39 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis section -->
+  <div class="full-width-container">
+    <div class="content-container">
+      <p>We looked at over two million votes—and the verdict is in: most captions barely get a chuckle. The majority sit just above "not funny," with only a tiny sliver reaching what you'd call genuinely funny. The curve drops off fast, like a bad punchline. Turns out, writing a caption that makes everyone laugh is incredibly rare. Even in a contest built for humor, the average score is closer to a sigh than a laugh.</p>
+    </div>
+  </div>
+  <!-- Score visualization section -->
+  <div class="full-width-container">
+    <div class="content-container">
+      <div class="visualization-container">
+        <!-- Generated by ai2html v0.121.1 - 2025-04-14 11:37 -->
+        <!-- ai file: mean_score.ai -->
+        <style media="screen,print">
+          #g-mean_score-box ,
+          #g-mean_score-box .g-artboard {
+            margin:0 auto;
+          }
+          #g-mean_score-box p {
+            margin:0;
+          }
+          #g-mean_score-box .g-aiAbs {
+            position:absolute;
+          }
+          #g-mean_score-box .g-aiImg {
+            position:absolute;
+            top:0;
+            display:block;
+            width:100% !important;
+          }
+          #g-mean_score-box .g-aiSymbol {
+            position: absolute;
+            box-sizing: border-box;
+          }
+          #g-mean_score-box .g-aiPointText p { white-space: nowrap; }
+          #g-mean_score-full {
+            position:relative;
+            overflow:hidden;
+          }
+          #g-mean_score-full p {
+            font-weight:regular;
+            line-height:14px;
+            opacity:1;
+            letter-spacing:0em;
+            font-size:12px;
+            text-align:left;
+            color:rgb(0,0,0);
+            text-transform:none;
+            padding-bottom:0;
+            padding-top:0;
+            mix-blend-mode:normal;
+            font-style:normal;
+            height:auto;
+            position:static;
+          }
+          #g-mean_score-full .g-pstyle0 {
+            font-weight:500;
+            line-height:25px;
+            font-size:21px;
+          }
+          #g-mean_score-full .g-pstyle1 {
+            font-weight:500;
+          }
+          #g-mean_score-medium {
+            position:relative;
+            overflow:hidden;
+          }
+          #g-mean_score-medium p {
+            font-weight:regular;
+            line-height:14px;
+            opacity:1;
+            letter-spacing:0em;
+            font-size:12px;
+            text-align:left;
+            color:rgb(0,0,0);
+            text-transform:none;
+            padding-bottom:0;
+            padding-top:0;
+            mix-blend-mode:normal;
+            font-style:normal;
+            height:auto;
+            position:static;
+          }
+          #g-mean_score-medium .g-pstyle0 {
+            font-weight:500;
+            line-height:25px;
+            font-size:21px;
+          }
+          #g-mean_score-medium .g-pstyle1 {
+            font-weight:500;
+          }
+          #g-mean_score-mobile {
+            position:relative;
+            overflow:hidden;
+          }
+          #g-mean_score-mobile p {
+            font-weight:regular;
+            line-height:14px;
+            opacity:1;
+            letter-spacing:0em;
+            font-size:12px;
+            text-align:left;
+            color:rgb(0,0,0);
+            text-transform:none;
+            padding-bottom:0;
+            padding-top:0;
+            mix-blend-mode:normal;
+            font-style:normal;
+            height:auto;
+            position:static;
+          }
+          #g-mean_score-mobile .g-pstyle0 {
+            font-weight:500;
+            line-height:22px;
+            font-size:18px;
+          }
+          #g-mean_score-mobile .g-pstyle1 {
+            font-weight:500;
+          }
+        </style>
+
+        <div id="g-mean_score-box" class="ai2html ai2html-responsive">
+          <!-- Artboard: full -->
+          <div id="g-mean_score-full" class="g-artboard" style="width:700px; height:425px;" data-aspect-ratio="1.647" data-min-width="700">
+            <div style=""></div>
+            <img id="g-mean_score-full-img" class="g-mean_score-full-img g-aiImg" alt="" src="mean_score-full.png"/>
+            <div id="g-ai0-1" class="g-ai2html-settings g-aiAbs" style="top:2.1176%;left:11.8805%;width:63.7143%;">
+              <p class="g-pstyle0">Funnier Captions Might Not Get More Love</p>
+            </div>
+            <div id="g-ai0-2" class="g-ai2html-settings g-aiAbs" style="top:7.7647%;left:11.8805%;width:63.7143%;">
+              <p class="g-pstyle1">Being funny does not equate to getting more funny votes</p>
+            </div>
+          </div>
+
+          <!-- Artboard: medium -->
+          <div id="g-mean_score-medium" class="g-artboard" style="width:490px; height:365px;" data-aspect-ratio="1.342" data-min-width="490" data-max-width="699">
+            <div style=""></div>
+            <img id="g-mean_score-medium-img" class="g-mean_score-medium-img g-aiImg" alt="" src="mean_score-medium.png"/>
+            <div id="g-ai1-1" class="g-ai2html-settings g-aiAbs" style="top:2.7397%;left:5.0334%;width:91.0204%;">
+              <p class="g-pstyle0">Funnier Captions Might Not Get More Love</p>
+            </div>
+            <div id="g-ai1-2" class="g-ai2html-settings g-aiAbs" style="top:9.3151%;left:5.0334%;width:91.0204%;">
+              <p class="g-pstyle1">Being funny does not equate to getting more funny votes</p>
+            </div>
+          </div>
+
+          <!-- Artboard: mobile -->
+          <div id="g-mean_score-mobile" class="g-artboard" style="max-width: 375px;max-height: 338px" data-aspect-ratio="1.11" data-min-width="0" data-max-width="489">
+            <div style="padding: 0 0 90.08% 0;"></div>
+            <img id="g-mean_score-mobile-img" class="g-mean_score-mobile-img g-aiImg" alt="" src="mean_score-mobile.png"/>
+            <div id="g-ai2-1" class="g-ai2html-settings g-aiAbs" style="top:5.3286%;left:2.4436%;width:118.9333%;">
+              <p class="g-pstyle0">Funnier Captions Might Not Get More Love</p>
+            </div>
+            <div id="g-ai2-2" class="g-ai2html-settings g-aiAbs" style="top:12.4334%;left:2.4436%;width:118.9333%;">
+              <p class="g-pstyle1">Being funny does not equate to getting more funny votes</p>
+            </div>
+          </div>
+        </div>
+
+        <script type="text/javascript">
+          (function (containerId, opts) {
+            var nameSpace = opts.namespace || '';
+            var containers = findContainers(containerId);
+            containers.forEach(resize);
+
+            function resize(container) {
+              var onResize = throttle(update, 200);
+              var waiting = !!window.IntersectionObserver;
+              var observer;
+              update();
+
+              document.addEventListener('DOMContentLoaded', update);
+              window.addEventListener('resize', onResize);
+
+              // NYT Scoop-specific code
+              if (opts.setup) {
+                opts.setup(container).on('cleanup', cleanup);
+              }
+
+              function cleanup() {
+                document.removeEventListener('DOMContentLoaded', update);
+                window.removeEventListener('resize', onResize);
+                if (observer) observer.disconnect();
+              }
+
+              function update() {
+                var artboards = selectChildren('.' + nameSpace + 'artboard[data-min-width]', container),
+                    width = Math.round(container.getBoundingClientRect().width);
+
+                // Set artboard visibility based on container width
+                artboards.forEach(function(el) {
+                  var minwidth = el.getAttribute('data-min-width'),
+                      maxwidth = el.getAttribute('data-max-width');
+                  if (+minwidth <= width && (+maxwidth >= width || maxwidth === null)) {
+                    if (!waiting) {
+                      selectChildren('.' + nameSpace + 'aiImg', el).forEach(updateImgSrc);
+                      selectChildren('video', el).forEach(updateVideoSrc);
+                    }
+                    el.style.display = 'block';
+                  } else {
+                    el.style.display = 'none';
+                  }
+                });
+
+                // Initialize lazy loading on first call
+                if (waiting && !observer) {
+                  if (elementInView(container)) {
+                    waiting = false;
+                    update();
+                  } else {
+                    observer = new IntersectionObserver(onIntersectionChange, {rootMargin: "800px"});
+                    observer.observe(container);
+                  }
+                }
+              }
+
+              function onIntersectionChange(entries) {
+                // There may be multiple entries relating to the same container
+                // (captured at different times)
+                var isIntersecting = entries.reduce(function(memo, entry) {
+                  return memo || entry.isIntersecting;
+                }, false);
+                if (isIntersecting) {
+                  waiting = false;
+                  // update: don't remove -- we need the observer to trigger an update
+                  // when a hidden map becomes visible after user interaction
+                  // (e.g. when an accordion menu or tab opens)
+                  // observer.disconnect();
+                  // observer = null;
+                  update();
+                }
+              }
+            }
+
+            function findContainers(id) {
+              // support duplicate ids on the page
+              return selectChildren('.ai2html-responsive', document).filter(function(el) {
+                if (el.getAttribute('id') != id) return false;
+                if (el.classList.contains('ai2html-resizer')) return false;
+                el.classList.add('ai2html-resizer');
+                return true;
+              });
+            }
+
+            // Replace blank placeholder image with actual image
+            function updateImgSrc(img) {
+              var src = img.getAttribute('data-src');
+              if (src && img.getAttribute('src') != src) {
+                img.setAttribute('src', src);
+              }
+            }
+
+            function updateVideoSrc(el) {
+              var src = el.getAttribute('data-src');
+              if (src && !el.hasAttribute('src')) {
+                el.setAttribute('src', src);
+              }
+            }
+
+            function elementInView(el) {
+              var bounds = el.getBoundingClientRect();
+              return bounds.top < window.innerHeight && bounds.bottom > 0;
+            }
+
+            function selectChildren(selector, parent) {
+              return parent ? Array.prototype.slice.call(parent.querySelectorAll(selector)) : [];
+            }
+
+            // based on underscore.js
+            function throttle(func, wait) {
+              var timeout = null, previous = 0;
+              function run() {
+                  previous = Date.now();
+                  timeout = null;
+                  func();
+              }
+              return function() {
+                var remaining = wait - (Date.now() - previous);
+                if (remaining <= 0 || remaining > wait) {
+                  clearTimeout(timeout);
+                  run();
+                } else if (!timeout) {
+                  timeout = setTimeout(run, remaining);
+                }
+              };
+            }
+          })("g-mean_score-box", {namespace: "g-", setup: window.setupInteractive || window.getComponent});
+        </script>
+        <!-- End ai2html - 2025-04-14 11:37 -->
+      </div>
+    </div>
+  </div>
+  <div class="full-width-container">
+    <div class="content-container">
+      <p>We also found a subtle signal in punctuation. Captions ending in question marks slightly underperformed compared to those ending in periods or with no punctuation at all. The best jokes don’t always ask—they tell. </p>
+    </div>
+    </div>
+  </div>
+  <div class="full-width-container">
+
+    <!-- Generated by ai2html v0.121.1 - 2025-04-15 00:22 -->
+    <!-- ai file: captionlenght.ai -->
+    <style media="screen,print">
+      #g-captionlenght-box ,
+      #g-captionlenght-box .g-artboard {
+        margin:0 auto;
+      }
+      #g-captionlenght-box p {
+        margin:0;
+      }
+      #g-captionlenght-box .g-aiAbs {
+        position:absolute;
+      }
+      #g-captionlenght-box .g-aiImg {
+        position:absolute;
+        top:0;
+        display:block;
+        width:100% !important;
+      }
+      #g-captionlenght-box .g-aiSymbol {
+        position: absolute;
+        box-sizing: border-box;
+      }
+      #g-captionlenght-box .g-aiPointText p { white-space: nowrap; }
+      #g-captionlenght-full {
+        position:relative;
+        overflow:hidden;
+      }
+      #g-captionlenght-full p {
+        font-weight:regular;
+        line-height:14px;
+        opacity:1;
+        letter-spacing:0em;
+        font-size:12px;
+        text-align:left;
+        color:rgb(0,0,0);
+        text-transform:none;
+        padding-bottom:0;
+        padding-top:0;
+        mix-blend-mode:normal;
+        font-style:normal;
+        height:auto;
+        position:static;
+      }
+      #g-captionlenght-full .g-pstyle0 {
+        font-weight:500;
+        line-height:29px;
+        height:29px;
+        font-size:24px;
+      }
+      #g-captionlenght-full .g-pstyle1 {
+        font-weight:500;
+        line-height:22px;
+        height:22px;
+        font-size:18px;
+      }
+      #g-captionlenght-full .g-pstyle2 {
+        font-weight:500;
+        line-height:19px;
+        height:19px;
+        font-size:15px;
+      }
+      #g-captionlenght-full .g-pstyle3 {
+        font-weight:500;
+        line-height:19px;
+        font-size:15px;
+      }
+      #g-captionlenght-full .g-pstyle4 {
+        font-weight:500;
+        line-height:25px;
+        font-size:21px;
+      }
+      #g-captionlenght-full .g-pstyle5 {
+        font-weight:500;
+      }
+      #g-captionlenght-medium {
+        position:relative;
+        overflow:hidden;
+      }
+      #g-captionlenght-medium p {
+        font-weight:regular;
+        line-height:14px;
+        opacity:1;
+        letter-spacing:0em;
+        font-size:12px;
+        text-align:left;
+        color:rgb(0,0,0);
+        text-transform:none;
+        padding-bottom:0;
+        padding-top:0;
+        mix-blend-mode:normal;
+        font-style:normal;
+        height:auto;
+        position:static;
+      }
+      #g-captionlenght-medium .g-pstyle0 {
+        font-weight:500;
+        line-height:29px;
+        height:29px;
+        font-size:24px;
+      }
+      #g-captionlenght-medium .g-pstyle1 {
+        font-weight:500;
+        line-height:22px;
+        height:22px;
+        font-size:18px;
+      }
+      #g-captionlenght-medium .g-pstyle2 {
+        font-weight:500;
+        line-height:19px;
+        height:19px;
+        font-size:15px;
+      }
+      #g-captionlenght-medium .g-pstyle3 {
+        font-weight:500;
+        line-height:19px;
+        font-size:15px;
+      }
+      #g-captionlenght-medium .g-pstyle4 {
+        font-weight:500;
+        line-height:25px;
+        font-size:21px;
+      }
+      #g-captionlenght-medium .g-pstyle5 {
+        font-weight:500;
+      }
+      #g-captionlenght-mobile {
+        position:relative;
+        overflow:hidden;
+      }
+      #g-captionlenght-mobile p {
+        font-weight:regular;
+        line-height:14px;
+        opacity:1;
+        letter-spacing:0em;
+        font-size:12px;
+        text-align:left;
+        color:rgb(0,0,0);
+        text-transform:none;
+        padding-bottom:0;
+        padding-top:0;
+        mix-blend-mode:normal;
+        font-style:normal;
+        height:auto;
+        position:static;
+      }
+      #g-captionlenght-mobile .g-pstyle0 {
+        font-weight:500;
+        line-height:29px;
+        height:29px;
+        font-size:24px;
+      }
+      #g-captionlenght-mobile .g-pstyle1 {
+        font-weight:500;
+        line-height:22px;
+        height:22px;
+        font-size:18px;
+      }
+      #g-captionlenght-mobile .g-pstyle2 {
+        font-weight:500;
+        height:14px;
+      }
+      #g-captionlenght-mobile .g-pstyle3 {
+        font-weight:500;
+        line-height:19px;
+        height:19px;
+        font-size:15px;
+      }
+      #g-captionlenght-mobile .g-pstyle4 {
+        font-weight:500;
+      }
+
+    </style>
+
+    <div id="g-captionlenght-box" class="ai2html ai2html-responsive">
+
+      <!-- Artboard: full -->
+      <div id="g-captionlenght-full" class="g-artboard" style="width:700px; height:2003px;" data-aspect-ratio="0.349" data-min-width="700">
+    <div style=""></div>
+        <img id="g-captionlenght-full-img" class="g-captionlenght-full-img g-aiImg" alt="" src="captionlenght-full.jpg"/>
+        <div id="g-ai0-1" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:1.4592%;margin-top:-16.2px;left:2.5144%;width:293px;">
+          <p class="g-pstyle0">Humor Has a Word Limit</p>
+        </div>
+        <div id="g-ai0-2" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:3.1474%;margin-top:-14px;left:2.6572%;width:685px;">
+          <p class="g-pstyle1">The longer the caption, the lower the laughs&mdash;brevity may be comedy's best friend</p>
+        </div>
+        <div id="g-ai0-3" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:5.0602%;margin-top:-12.4px;left:2.9429%;width:89px;">
+          <p class="g-pstyle2">Not funny</p>
+        </div>
+        <div id="g-ai0-4" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:5.0602%;margin-top:-12.4px;left:31.2893%;width:138px;">
+          <p class="g-pstyle2">Somewhat funny</p>
+        </div>
+        <div id="g-ai0-5" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:5.0602%;margin-top:-12.4px;left:61.7271%;width:64px;">
+          <p class="g-pstyle2">Funny</p>
+        </div>
+        <div id="g-ai0-6" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:6.7576%;margin-top:-12.4px;left:3.3115%;width:155px;">
+          <p class="g-pstyle2">Length (characters)</p>
+        </div>
+        <div id="g-ai0-7" class="g-Layer6 g-aiAbs g-aiPointText" style="top:13.847%;margin-top:-12.4px;left:44.8846%;width:234px;">
+          <p class="g-pstyle2">Highest number of funny votes</p>
+        </div>
+        <div id="g-ai0-8" class="g-Layer_3 g-aiAbs" style="top:15.5267%;left:3.4246%;width:4.8571%;">
+          <p class="g-pstyle3">500</p>
+        </div>
+        <div id="g-ai0-9" class="g-Layer_3 g-aiAbs" style="top:23.7644%;left:3.4246%;width:5.7143%;">
+          <p class="g-pstyle3">1000</p>
+        </div>
+        <div id="g-ai0-10" class="g-Layer6 g-aiAbs g-aiPointText" style="top:26.4281%;margin-top:-12.4px;left:51.0128%;width:145px;">
+          <p class="g-pstyle2">&ldquo;Lunch is on me.&rdquo;</p>
+        </div>
+        <div id="g-ai0-11" class="g-Layer_3 g-aiAbs" style="transform: matrix(0,1,-1,0,0,0);transform-origin: 50% 49.9969476832916%;-webkit-transform: matrix(0,1,-1,0,0,0);-webkit-transform-origin: 50% 49.9969476832916%;-ms-transform: matrix(0,1,-1,0,0,0);-ms-transform-origin: 50% 49.9969476832916%;top:-409.336%;margin-top:--16381px;left:-1045.1429%;margin-left:-2.5714%;width:5.1429%;">
+          <p class="g-pstyle4">1500</p>
+        </div>
+        <div id="g-ai0-12" class="g-Layer_3 g-aiAbs" style="top:31.5027%;left:3.4246%;width:6.8571%;">
+          <p class="g-pstyle3">1500</p>
+        </div>
+        <div id="g-ai0-13" class="g-Layer_3 g-aiAbs" style="transform: matrix(0,1,-1,0,0,0);transform-origin: 50% 49.9969476832916%;-webkit-transform: matrix(0,1,-1,0,0,0);-webkit-transform-origin: 50% 49.9969476832916%;-ms-transform: matrix(0,1,-1,0,0,0);-ms-transform-origin: 50% 49.9969476832916%;top:-409.336%;margin-top:--16381px;left:-1045.1429%;margin-left:-2.5714%;width:5.1429%;">
+          <p class="g-pstyle4">2000</p>
+        </div>
+        <div id="g-ai0-14" class="g-Layer_3 g-aiAbs" style="top:39.7404%;left:3.4246%;width:6.2857%;">
+          <p class="g-pstyle3">2000</p>
+        </div>
+        <div id="g-ai0-15" class="g-Layer_3 g-aiAbs" style="transform: matrix(0,1,-1,0,0,0);transform-origin: 50% 49.9969476832916%;-webkit-transform: matrix(0,1,-1,0,0,0);-webkit-transform-origin: 50% 49.9969476832916%;-ms-transform: matrix(0,1,-1,0,0,0);-ms-transform-origin: 50% 49.9969476832916%;top:-409.336%;margin-top:--16381px;left:-1045.1429%;margin-left:-2.5714%;width:5.1429%;">
+          <p class="g-pstyle4">2500</p>
+        </div>
+        <div id="g-ai0-16" class="g-Layer_6 g-aiAbs g-aiPointText" style="top:47.197%;margin-top:-12.4px;left:38.6839%;width:107px;">
+          <p class="g-pstyle2">Contest 523</p>
+        </div>
+        <div id="g-ai0-17" class="g-Layer_3 g-aiAbs" style="top:48.1777%;left:3.4246%;width:5.7143%;">
+          <p class="g-pstyle3">2500</p>
+        </div>
+        <div id="g-ai0-18" class="g-Layer_6 g-aiAbs g-aiPointText" style="top:62.0247%;margin-top:-12.4px;left:38.0902%;width:115px;">
+          <p class="g-pstyle2">2 funny votes</p>
+        </div>
+        <div id="g-ai0-19" class="g-Layer_6 g-aiAbs" style="top:63.355%;left:13.7873%;width:61.8571%;">
+          <p class="g-pstyle5">Monkeys don't breed well in captivity...yea right.</p>
+          <p class="g-pstyle5">50,9,3,Would this be more fun if we got a barrel?</p>
+          <p class="g-pstyle5">79,17,17,What's wrong?</p>
+          <p class="g-pstyle5">56,13,8,Are you sure they're all mine?</p>
+          <p class="g-pstyle5">46,11,2,I told you they&rsquo;d get bored watching &lsquo;Planet of the Apes&rsquo; again.</p>
+          <p class="g-pstyle5">36,5,1,Pre-typing research I presume.</p>
+          <p class="g-pstyle5">38,7,2,They need to get back to the typewriters and come up with a catchier title.</p>
+          <p class="g-pstyle5">47,11,4,Consider this the last time I give you my Costco card.</p>
+          <p class="g-pstyle5">53,18,5,I think the extermination worked. Do you see any ants?</p>
+          <p class="g-pstyle5">43,10,2,Is it possible to get all this fun back into the barrel?</p>
+          <p class="g-pstyle5">37,7,1,This is the last time we open our house for a political convention.</p>
+          <p class="g-pstyle5">29,3,0,Wrong Barrel</p>
+          <p class="g-pstyle5">45,2,3,They were more fun when they could fit in the barrel.</p>
+          <p class="g-pstyle5">35,7,1,Did you forget to pick up bananas again?</p>
+          <p class="g-pstyle5">38,7,1,Ms. Goodall didn't say anything about TV time</p>
+          <p class="g-pstyle5">44,8,3,Left the lid off the barrel again did ya'?</p>
+          <p class="g-pstyle5">56,17,8,Without the barrel it all seems rather pointless.</p>
+          <p class="g-pstyle5">44,3,0,By tomorrow night we will be living outside of Phoenix in the Primate Relocation Program.</p>
+          <p class="g-pstyle5">37,5,1,Cage Freed?</p>
+          <p class="g-pstyle5">34,1,1,I say it should be Booth and they should be cats</p>
+          <p class="g-pstyle5">95,9,0,The salesman told me the missing one made the mistake of outpolling Bruce Willis for best actor</p>
+          <p class="g-pstyle5">40,6,4,Me Plaintiff. You Jane.</p>
+          <p class="g-pstyle5">69,19,13,It's not you...</p>
+          <p class="g-pstyle5">45,10,3,One day they'll evolve</p>
+          <p class="g-pstyle5">55,10,8,They were a lot more fun in the barrel</p>
+          <p class="g-pstyle5">36,6,1,That 11th monkey was probably not the best decision</p>
+          <p class="g-pstyle5">46,14,3,Did I mention that I've started an organ-grinder franchise?</p>
+          <p class="g-pstyle5">41,9,2,I think our barrel has sprung a leak.</p>
+          <p class="g-pstyle5">55,7,2,I'm in the mood for love.</p>
+          <p class="g-pstyle5">43,10,2,Do we have ANY bananas?</p>
+          <p class="g-pstyle5">32,3,1,So was more fun when they were in the barrel?</p>
+          <p class="g-pstyle5">36,4,1,I don't care what the surprise is. I'm [i]not[/i] opening my eyes.</p>
+          <p class="g-pstyle5">39,7,2,It doesn't get any more fun than this.</p>
+          <p class="g-pstyle5">63,22,10,I feel like you're not really listening.</p>
+          <p class="g-pstyle5">72,23,12,You and Costco are done.</p>
+          <p class="g-pstyle5">43,6,3,Did you pray for a barrel of monkey instead of money ?</p>
+          <p class="g-pstyle5">36,5,1,I thought they'd help me bring up the subject of a little monkey business.</p>
+          <p class="g-pstyle5">28,1,0,I should have married Chiquita Banana!</p>
+          <p class="g-pstyle5">60,30,6,It's not a good idea to open the attachments in your spam folder</p>
+          <p class="g-pstyle5">35,1,0,Which one of them's Mickey's?</p>
+          <p class="g-pstyle5">37,8,0,This isn't quite what I meant by 'adopt'</p>
+          <p class="g-pstyle5">31,0,0,Where did you even get these monkeys Steve?</p>
+          <p class="g-pstyle5">58,20,7,It was buy one get ten free.</p>
+          <p class="g-pstyle5">58,18,5,It still beats having kids.</p>
+          <p class="g-pstyle5">44,14,3,Let&rsquo;s reconsider our &ldquo;Chimp-of-the-Month Club&rdquo; membership.</p>
+          <p class="g-pstyle5">39,7,1,Blame PETA; they broke the barrel".</p>
+        </div>
+      </div>
+
+      <!-- Artboard: medium -->
+      <div id="g-captionlenght-medium" class="g-artboard" style="width:490px; height:2104px;" data-aspect-ratio="0.233" data-min-width="490" data-max-width="699">
+    <div style=""></div>
+        <img id="g-captionlenght-medium-img" class="g-captionlenght-medium-img g-aiImg" alt="" src="captionlenght-medium.jpg"/>
+        <div id="g-ai1-1" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:1.4367%;margin-top:-16.2px;left:3.2858%;width:293px;">
+          <p class="g-pstyle0">Humor Has a Word Limit</p>
+        </div>
+        <div id="g-ai1-2" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:3.5096%;margin-top:-24.8px;left:3.4899%;width:375px;">
+          <p class="g-pstyle1">The longer the caption, the lower the laughs</p>
+          <p class="g-pstyle1">&mdash;brevity may be comedy's best friend</p>
+        </div>
+        <div id="g-ai1-3" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:7.3363%;margin-top:-12.4px;left:3.2858%;width:89px;">
+          <p class="g-pstyle2">Not funny</p>
+        </div>
+        <div id="g-ai1-4" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:7.3363%;margin-top:-12.4px;left:43.7807%;width:138px;">
+          <p class="g-pstyle2">Somewhat funny</p>
+        </div>
+        <div id="g-ai1-5" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:7.3363%;margin-top:-12.4px;left:87.2632%;width:64px;">
+          <p class="g-pstyle2">Funny</p>
+        </div>
+        <div id="g-ai1-6" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:8.9047%;margin-top:-12.4px;left:3.8124%;width:155px;">
+          <p class="g-pstyle2">Length (characters)</p>
+        </div>
+        <div id="g-ai1-7" class="g-Layer6 g-aiAbs g-aiPointText" style="top:15.8439%;margin-top:-12.4px;left:56.8782%;width:107px;">
+          <p class="g-pstyle2">Contest 665</p>
+        </div>
+        <div id="g-ai1-8" class="g-Layer_3 g-aiAbs" style="top:17.2529%;left:3.9739%;width:6.9388%;">
+          <p class="g-pstyle3">500</p>
+        </div>
+        <div id="g-ai1-9" class="g-Layer_3 g-aiAbs" style="top:25.0951%;left:3.9739%;width:8.1633%;">
+          <p class="g-pstyle3">1000</p>
+        </div>
+        <div id="g-ai1-10" class="g-Layer6 g-aiAbs g-aiPointText" style="top:28.2013%;margin-top:-12.4px;left:52.9263%;width:145px;">
+          <p class="g-pstyle2">&ldquo;Lunch is on me.&rdquo;</p>
+        </div>
+        <div id="g-ai1-11" class="g-Layer_3 g-aiAbs" style="transform: matrix(0,1,-1,0,0,0);transform-origin: 50% 49.9969476832916%;-webkit-transform: matrix(0,1,-1,0,0,0);-webkit-transform-origin: 50% 49.9969476832916%;-ms-transform: matrix(0,1,-1,0,0,0);-ms-transform-origin: 50% 49.9969476832916%;top:-389.6388%;margin-top:--16381px;left:-1708.8776%;margin-left:-3.6735%;width:7.3469%;">
+          <p class="g-pstyle4">1500</p>
+        </div>
+        <div id="g-ai1-12" class="g-Layer_3 g-aiAbs" style="top:32.462%;left:3.9739%;width:9.7959%;">
+          <p class="g-pstyle3">1500</p>
+        </div>
+        <div id="g-ai1-13" class="g-Layer_3 g-aiAbs" style="transform: matrix(0,1,-1,0,0,0);transform-origin: 50% 49.9969476832916%;-webkit-transform: matrix(0,1,-1,0,0,0);-webkit-transform-origin: 50% 49.9969476832916%;-ms-transform: matrix(0,1,-1,0,0,0);-ms-transform-origin: 50% 49.9969476832916%;top:-389.6388%;margin-top:--16381px;left:-1708.8776%;margin-left:-3.6735%;width:7.3469%;">
+          <p class="g-pstyle4">2000</p>
+        </div>
+        <div id="g-ai1-14" class="g-Layer_3 g-aiAbs" style="top:40.3042%;left:3.9739%;width:8.9796%;">
+          <p class="g-pstyle3">2000</p>
+        </div>
+        <div id="g-ai1-15" class="g-Layer_6 g-aiAbs g-aiPointText" style="top:45.5967%;margin-top:-12.4px;left:53.7321%;width:107px;">
+          <p class="g-pstyle2">Contest 523</p>
+        </div>
+        <div id="g-ai1-16" class="g-Layer_3 g-aiAbs" style="transform: matrix(0,1,-1,0,0,0);transform-origin: 50% 49.9969476832916%;-webkit-transform: matrix(0,1,-1,0,0,0);-webkit-transform-origin: 50% 49.9969476832916%;-ms-transform: matrix(0,1,-1,0,0,0);-ms-transform-origin: 50% 49.9969476832916%;top:-389.6388%;margin-top:--16381px;left:-1708.8776%;margin-left:-3.6735%;width:7.3469%;">
+          <p class="g-pstyle4">2500</p>
+        </div>
+        <div id="g-ai1-17" class="g-Layer_3 g-aiAbs" style="top:48.3365%;left:3.9739%;width:8.1633%;">
+          <p class="g-pstyle3">2500</p>
+        </div>
+        <div id="g-ai1-18" class="g-Layer_6 g-aiAbs g-aiPointText" style="top:59.7127%;margin-top:-12.4px;left:52.8838%;width:115px;">
+          <p class="g-pstyle2">2 funny votes</p>
+        </div>
+        <div id="g-ai1-19" class="g-Layer_6 g-aiAbs" style="top:60.9316%;left:26.5329%;width:71.4286%;">
+          <p class="g-pstyle5">Monkeys don't breed well in captivity...yea right.</p>
+          <p class="g-pstyle5">50,9,3,Would this be more fun if we got a barrel?</p>
+          <p class="g-pstyle5">79,17,17,What's wrong?</p>
+          <p class="g-pstyle5">56,13,8,Are you sure they're all mine?</p>
+          <p class="g-pstyle5">46,11,2,I told you they&rsquo;d get bored watching &lsquo;Planet of the Apes&rsquo; again.</p>
+          <p class="g-pstyle5">36,5,1,Pre-typing research I presume.</p>
+          <p class="g-pstyle5">38,7,2,They need to get back to the typewriters and come up with a catchier title.</p>
+          <p class="g-pstyle5">47,11,4,Consider this the last time I give you my Costco card.</p>
+          <p class="g-pstyle5">53,18,5,I think the extermination worked. Do you see any ants?</p>
+          <p class="g-pstyle5">43,10,2,Is it possible to get all this fun back into the barrel?</p>
+          <p class="g-pstyle5">37,7,1,This is the last time we open our house for a political convention.</p>
+          <p class="g-pstyle5">29,3,0,Wrong Barrel</p>
+          <p class="g-pstyle5">45,2,3,They were more fun when they could fit in the barrel.</p>
+          <p class="g-pstyle5">35,7,1,Did you forget to pick up bananas again?</p>
+          <p class="g-pstyle5">38,7,1,Ms. Goodall didn't say anything about TV time</p>
+          <p class="g-pstyle5">44,8,3,Left the lid off the barrel again did ya'?</p>
+          <p class="g-pstyle5">56,17,8,Without the barrel it all seems rather pointless.</p>
+          <p class="g-pstyle5">44,3,0,By tomorrow night we will be living outside of Phoenix in the Primate Relocation Program.</p>
+          <p class="g-pstyle5">37,5,1,Cage Freed?</p>
+          <p class="g-pstyle5">34,1,1,I say it should be Booth and they should be cats</p>
+          <p class="g-pstyle5">95,9,0,The salesman told me the missing one made the mistake of outpolling Bruce Willis for best actor</p>
+          <p class="g-pstyle5">40,6,4,Me Plaintiff. You Jane.</p>
+          <p class="g-pstyle5">69,19,13,It's not you...</p>
+          <p class="g-pstyle5">45,10,3,One day they'll evolve</p>
+          <p class="g-pstyle5">55,10,8,They were a lot more fun in the barrel</p>
+          <p class="g-pstyle5">36,6,1,That 11th monkey was probably not the best decision</p>
+          <p class="g-pstyle5">46,14,3,Did I mention that I've started an organ-grinder franchise?</p>
+          <p class="g-pstyle5">41,9,2,I think our barrel has sprung a leak.</p>
+          <p class="g-pstyle5">55,7,2,I'm in the mood for love.</p>
+          <p class="g-pstyle5">43,10,2,Do we have ANY bananas?</p>
+          <p class="g-pstyle5">32,3,1,So was more fun when they were in the barrel?</p>
+          <p class="g-pstyle5">36,4,1,I don't care what the surprise is. I'm [i]not[/i] opening my eyes.</p>
+          <p class="g-pstyle5">39,7,2,It doesn't get any more fun than this.</p>
+          <p class="g-pstyle5">63,22,10,I feel like you're not really listening.</p>
+          <p class="g-pstyle5">72,23,12,You and Costco are done.</p>
+          <p class="g-pstyle5">43,6,3,Did you pray for a barrel of monkey instead of money ?</p>
+          <p class="g-pstyle5">36,5,1,I thought they'd help me bring up the subject of a little monkey business.</p>
+          <p class="g-pstyle5">28,1,0,I should have married Chiquita Banana!</p>
+          <p class="g-pstyle5">60,30,6,It's not a good idea to open the attachments in your spam folder</p>
+          <p class="g-pstyle5">35,1,0,Which one of them's Mickey's?</p>
+          <p class="g-pstyle5">37,8,0,This isn't quite what I meant by 'adopt'</p>
+          <p class="g-pstyle5">31,0,0,Where did you even get these monkeys Steve?</p>
+          <p class="g-pstyle5">58,20,7,It was buy one get ten free.</p>
+          <p class="g-pstyle5">58,18,5,It still beats having kids.</p>
+          <p class="g-pstyle5">44,14,3,Let&rsquo;s reconsider our &ldquo;Chimp-of-the-Month Club&rdquo; membership.</p>
+          <p class="g-pstyle5">39,7,1,Blame PETA; they broke the barrel".</p>
+        </div>
+      </div>
+
+      <!-- Artboard: mobile -->
+      <div id="g-captionlenght-mobile" class="g-artboard" style="max-width: 375px;max-height: 2012px" data-aspect-ratio="0.186" data-min-width="0" data-max-width="489">
+    <div style="padding: 0 0 536.48% 0;"></div>
+        <img id="g-captionlenght-mobile-img" class="g-captionlenght-mobile-img g-aiImg" alt="" src="captionlenght-mobile.jpg"/>
+        <div id="g-ai2-1" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:1.5025%;margin-top:-16.2px;left:2.5602%;width:293px;">
+          <p class="g-pstyle0">Humor Has a Word Limit</p>
+        </div>
+        <div id="g-ai2-2" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:3.6704%;margin-top:-24.8px;left:2.8268%;width:375px;">
+          <p class="g-pstyle1">The longer the caption, the lower the laughs</p>
+          <p class="g-pstyle1">&mdash;brevity may be comedy's best friend</p>
+        </div>
+        <div id="g-ai2-3" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:7.5568%;margin-top:-9px;left:2.2227%;width:74px;">
+          <p class="g-pstyle2">Not funny</p>
+        </div>
+        <div id="g-ai2-4" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:7.5568%;margin-top:-9px;left:43.2427%;width:112px;">
+          <p class="g-pstyle2">Somewhat funny</p>
+        </div>
+        <div id="g-ai2-5" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:7.5568%;margin-top:-9px;left:87.2893%;width:55px;">
+          <p class="g-pstyle2">Funny</p>
+        </div>
+        <div id="g-ai2-6" class="g-Layer_3 g-aiAbs g-aiPointText" style="top:8.8492%;margin-top:-9px;left:2.756%;width:125px;">
+          <p class="g-pstyle2">Length (characters)</p>
+        </div>
+        <div id="g-ai2-7" class="g-Layer6 g-aiAbs g-aiPointText" style="top:13.5876%;margin-top:-12.4px;left:61.6544%;width:107px;">
+          <p class="g-pstyle3">Contest 665</p>
+        </div>
+        <div id="g-ai2-8" class="g-Layer_3 g-aiAbs" style="top:15.6576%;left:2.92%;width:6.9333%;">
+          <p class="g-pstyle4">500</p>
+        </div>
+        <div id="g-ai2-9" class="g-Layer6 g-aiAbs g-aiPointText" style="top:21.6898%;margin-top:-12.4px;left:56.4904%;width:145px;">
+          <p class="g-pstyle3">&ldquo;Lunch is on me.&rdquo;</p>
+        </div>
+        <div id="g-ai2-10" class="g-Layer_3 g-aiAbs" style="top:22.0201%;left:2.92%;width:8.2667%;">
+          <p class="g-pstyle4">1000</p>
+        </div>
+        <div id="g-ai2-11" class="g-Layer_3 g-aiAbs" style="top:27.9849%;left:2.92%;width:9.8667%;">
+          <p class="g-pstyle4">1500</p>
+        </div>
+        <div id="g-ai2-12" class="g-Layer_3 g-aiAbs" style="top:34.3474%;left:2.92%;width:9.0667%;">
+          <p class="g-pstyle4">2000</p>
+        </div>
+        <div id="g-ai2-13" class="g-Layer_6 g-aiAbs g-aiPointText" style="top:36.8504%;margin-top:-12.4px;left:49.5906%;width:107px;">
+          <p class="g-pstyle3">Contest 523</p>
+        </div>
+        <div id="g-ai2-14" class="g-Layer_3 g-aiAbs" style="top:40.8589%;left:2.92%;width:8.2667%;">
+          <p class="g-pstyle4">2500</p>
+        </div>
+        <div id="g-ai2-15" class="g-Layer_6 g-aiAbs g-aiPointText" style="top:48.6806%;margin-top:-12.4px;left:48.4823%;width:115px;">
+          <p class="g-pstyle3">2 funny votes</p>
+        </div>
+        <div id="g-ai2-16" class="g-Layer_6 g-aiAbs" style="top:49.4085%;left:23.117%;width:69.3333%;">
+          <p class="g-pstyle4">Monkeys don't breed well in captivity...yea right.</p>
+          <p class="g-pstyle4">50,9,3,Would this be more fun if we got a barrel?</p>
+          <p class="g-pstyle4">79,17,17,What's wrong?</p>
+          <p class="g-pstyle4">56,13,8,Are you sure they're all mine?</p>
+          <p class="g-pstyle4">46,11,2,I told you they&rsquo;d get bored watching &lsquo;Planet of the Apes&rsquo; again.</p>
+          <p class="g-pstyle4">36,5,1,Pre-typing research I presume.</p>
+          <p class="g-pstyle4">38,7,2,They need to get back to the typewriters and come up with a catchier title.</p>
+          <p class="g-pstyle4">47,11,4,Consider this the last time I give you my Costco card.</p>
+          <p class="g-pstyle4">53,18,5,I think the extermination worked. Do you see any ants?</p>
+          <p class="g-pstyle4">43,10,2,Is it possible to get all this fun back into the barrel?</p>
+          <p class="g-pstyle4">37,7,1,This is the last time we open our house for a political convention.</p>
+          <p class="g-pstyle4">29,3,0,Wrong Barrel</p>
+          <p class="g-pstyle4">45,2,3,They were more fun when they could fit in the barrel.</p>
+          <p class="g-pstyle4">35,7,1,Did you forget to pick up bananas again?</p>
+          <p class="g-pstyle4">38,7,1,Ms. Goodall didn't say anything about TV time</p>
+          <p class="g-pstyle4">44,8,3,Left the lid off the barrel again did ya'?</p>
+          <p class="g-pstyle4">56,17,8,Without the barrel it all seems rather pointless.</p>
+          <p class="g-pstyle4">44,3,0,By tomorrow night we will be living outside of Phoenix in the Primate Relocation Program.</p>
+          <p class="g-pstyle4">37,5,1,Cage Freed?</p>
+          <p class="g-pstyle4">34,1,1,I say it should be Booth and they should be cats</p>
+          <p class="g-pstyle4">95,9,0,The salesman told me the missing one made the mistake of outpolling Bruce Willis for best actor</p>
+          <p class="g-pstyle4">40,6,4,Me Plaintiff. You Jane.</p>
+          <p class="g-pstyle4">69,19,13,It's not you...</p>
+          <p class="g-pstyle4">45,10,3,One day they'll evolve</p>
+          <p class="g-pstyle4">55,10,8,They were a lot more fun in the barrel</p>
+          <p class="g-pstyle4">36,6,1,That 11th monkey was probably not the best decision</p>
+          <p class="g-pstyle4">46,14,3,Did I mention that I've started an organ-grinder franchise?</p>
+          <p class="g-pstyle4">41,9,2,I think our barrel has sprung a leak.</p>
+          <p class="g-pstyle4">55,7,2,I'm in the mood for love.</p>
+          <p class="g-pstyle4">43,10,2,Do we have ANY bananas?</p>
+          <p class="g-pstyle4">32,3,1,So was more fun when they were in the barrel?</p>
+          <p class="g-pstyle4">36,4,1,I don't care what the surprise is. I'm [i]not[/i] opening my eyes.</p>
+          <p class="g-pstyle4">39,7,2,It doesn't get any more fun than this.</p>
+          <p class="g-pstyle4">63,22,10,I feel like you're not really listening.</p>
+          <p class="g-pstyle4">72,23,12,You and Costco are done.</p>
+          <p class="g-pstyle4">43,6,3,Did you pray for a barrel of monkey instead of money ?</p>
+          <p class="g-pstyle4">36,5,1,I thought they'd help me bring up the subject of a little monkey business.</p>
+          <p class="g-pstyle4">28,1,0,I should have married Chiquita Banana!</p>
+          <p class="g-pstyle4">60,30,6,It's not a good idea to open the attachments in your spam folder</p>
+          <p class="g-pstyle4">35,1,0,Which one of them's Mickey's?</p>
+          <p class="g-pstyle4">37,8,0,This isn't quite what I meant by 'adopt'</p>
+          <p class="g-pstyle4">31,0,0,Where did you even get these monkeys Steve?</p>
+          <p class="g-pstyle4">58,20,7,It was buy one get ten free.</p>
+          <p class="g-pstyle4">58,18,5,It still beats having kids.</p>
+          <p class="g-pstyle4">44,14,3,Let&rsquo;s reconsider our &ldquo;Chimp-of-the-Month Club&rdquo; membership.</p>
+          <p class="g-pstyle4">39,7,1,Blame PETA; they broke the barrel".</p>
+        </div>
+      </div>
+
+    </div>
+
+    <script type="text/javascript">
+      (function (containerId, opts) {
+        var nameSpace = opts.namespace || '';
+        var containers = findContainers(containerId);
+        containers.forEach(resize);
+
+        function resize(container) {
+          var onResize = throttle(update, 200);
+          var waiting = !!window.IntersectionObserver;
+          var observer;
+          update();
+
+          document.addEventListener('DOMContentLoaded', update);
+          window.addEventListener('resize', onResize);
+
+          // NYT Scoop-specific code
+          if (opts.setup) {
+            opts.setup(container).on('cleanup', cleanup);
+          }
+
+          function cleanup() {
+            document.removeEventListener('DOMContentLoaded', update);
+            window.removeEventListener('resize', onResize);
+            if (observer) observer.disconnect();
+          }
+
+          function update() {
+            var artboards = selectChildren('.' + nameSpace + 'artboard[data-min-width]', container),
+                width = Math.round(container.getBoundingClientRect().width);
+
+            // Set artboard visibility based on container width
+            artboards.forEach(function(el) {
+              var minwidth = el.getAttribute('data-min-width'),
+                  maxwidth = el.getAttribute('data-max-width');
+              if (+minwidth <= width && (+maxwidth >= width || maxwidth === null)) {
+                if (!waiting) {
+                  selectChildren('.' + nameSpace + 'aiImg', el).forEach(updateImgSrc);
+                  selectChildren('video', el).forEach(updateVideoSrc);
+                }
+                el.style.display = 'block';
+              } else {
+                el.style.display = 'none';
+              }
+            });
+
+            // Initialize lazy loading on first call
+            if (waiting && !observer) {
+              if (elementInView(container)) {
+                waiting = false;
+                update();
+              } else {
+                observer = new IntersectionObserver(onIntersectionChange, {rootMargin: "800px"});
+                observer.observe(container);
+              }
+            }
+          }
+
+          function onIntersectionChange(entries) {
+            // There may be multiple entries relating to the same container
+            // (captured at different times)
+            var isIntersecting = entries.reduce(function(memo, entry) {
+              return memo || entry.isIntersecting;
+            }, false);
+            if (isIntersecting) {
+              waiting = false;
+              // update: don't remove -- we need the observer to trigger an update
+              // when a hidden map becomes visible after user interaction
+              // (e.g. when an accordion menu or tab opens)
+              // observer.disconnect();
+              // observer = null;
+              update();
+            }
+          }
+        }
+
+        function findContainers(id) {
+          // support duplicate ids on the page
+          return selectChildren('.ai2html-responsive', document).filter(function(el) {
+            if (el.getAttribute('id') != id) return false;
+            if (el.classList.contains('ai2html-resizer')) return false;
+            el.classList.add('ai2html-resizer');
+            return true;
+          });
+        }
+
+        // Replace blank placeholder image with actual image
+        function updateImgSrc(img) {
+          var src = img.getAttribute('data-src');
+          if (src && img.getAttribute('src') != src) {
+            img.setAttribute('src', src);
+          }
+        }
+
+        function updateVideoSrc(el) {
+          var src = el.getAttribute('data-src');
+          if (src && !el.hasAttribute('src')) {
+            el.setAttribute('src', src);
+          }
+        }
+
+        function elementInView(el) {
+          var bounds = el.getBoundingClientRect();
+          return bounds.top < window.innerHeight && bounds.bottom > 0;
+        }
+
+        function selectChildren(selector, parent) {
+          return parent ? Array.prototype.slice.call(parent.querySelectorAll(selector)) : [];
+        }
+
+        // based on underscore.js
+        function throttle(func, wait) {
+          var timeout = null, previous = 0;
+          function run() {
+              previous = Date.now();
+              timeout = null;
+              func();
+          }
+          return function() {
+            var remaining = wait - (Date.now() - previous);
+            if (remaining <= 0 || remaining > wait) {
+              clearTimeout(timeout);
+              run();
+            } else if (!timeout) {
+              timeout = setTimeout(run, remaining);
+            }
+          };
+        }
+      })("g-captionlenght-box", {namespace: "g-", setup: window.setupInteractive || window.getComponent});
+    </script>
+    <!-- End ai2html - 2025-04-15 00:22 -->
+
+  </div>
+    <div class="full-width-container">
+      <div class="content-container">
+        <p>Captions with fewer words tended to score higher in funniness. The sweet spot? Around 50 characters. Brevity helps—but it’s no guarantee.</p>
+      </div>
+    </div>
+  <div class="full-width-container">
+    <div class="content-container">
+      <p>To better understand the humor landscape, we used a clustering algorithm to helps us identify the underlying humor categories that people find funny.</p>
+      <p>Using UMAP and clustering on sentence embeddings, we projected all captions into a 2D humor map. Each point is a caption, each color a style.</p>
+      <a href="https://chilinhhovo.github.io/cluster_1/" class="visualization-link">Explore the UMAP Visualizationsection →</a>
+    </div>
+  </div>
+
+
+  <script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+      // First, ensure all required elements exist
+      const scrolly = document.querySelector(".scrolly");
+      const steps = document.querySelectorAll(".step");
+      const canvas = document.getElementById("viz");
+      const context = canvas.getContext("2d");
+      const tooltip = document.getElementById("tooltip");
+      const clusterLabel = document.getElementById("cluster-label");
+      const scrollText = document.getElementById("scroll-text");
+      const overlayBox = document.querySelector(".overlay-box");
+      
+      // Log for debugging
+      console.log("Scrolly element:", scrolly);
+      console.log("Number of steps:", steps.length);
+      
+      // Check if required elements exist
+      if (!scrolly) {
+        console.error("Scrolly container not found");
+        return;
+      }
+      
+      if (!steps.length) {
+        console.error("No step elements found");
+        return;
+      }
+      
+      if (!canvas) {
+        console.error("Canvas element not found");
+        return;
+      }
+
+      const clusterNames = [
+        "Wry Observations", "Grim Irony", "Food & Death", "Playful Absurdity", "Satirical Bureaucracy",
+        "Urban Dread", "Medical Sarcasm", "Death Courtroom", "Anthropomorphic Chaos", "Legal Fatalism"
+      ];
+    
+      let dataFrames = [];
+      let dots = [];
+      let currentFrame = 0;
+      const dotSize = 8;
+    
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        drawDots(true);
+      }
+    
+      function drawDots(interp = false) {
+        if (!dots.length) return;
+        
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        dots.forEach(dot => {
+          dot.x += (dot.tx - dot.x) * 0.2;
+          dot.y += (dot.ty - dot.y) * 0.2;
+          dot.opacity += (dot.tOpacity - dot.opacity) * 0.2;
+          dot.color = dot.highlight ? clusterColors[dot.cluster] : "#ccc";
+    
+          context.globalAlpha = dot.opacity;
+          context.fillStyle = dot.color;
+          context.fillRect(dot.x * canvas.width - dotSize / 2, dot.y * canvas.height - dotSize / 2, dotSize, dotSize);
+        });
+        context.globalAlpha = 1;
+        if (interp) requestAnimationFrame(() => drawDots(true));
+      }
+    
+      const clusterColors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"];
+    
+      function updateFrame(index) {
+        currentFrame = index;
+        const targetDots = dataFrames[index];
+        
+        if (!targetDots) return;
+    
+        clusterLabel.textContent = (index >= 2 && index <= 11)
+          ? `Cluster ${index - 2}: ${clusterNames[index - 2]}`
+          : "";
+          
+        if (dots.length !== targetDots.length) {
+          dots = targetDots.map(d => ({
+            ...d,
+            x: d.x,
+            y: d.y,
+            tx: d.x,
+            ty: d.y,
+            opacity: d.highlight ? 1 : 0.3,
+            tOpacity: d.highlight ? 1 : 0.3,
+            highlight: d.highlight,
+            caption: d.caption,
+            cluster: d.cluster
+          }));
+        } else {
+          targetDots.forEach((d, i) => {
+            dots[i].tx = d.x;
+            dots[i].ty = d.y;
+            dots[i].tOpacity = d.highlight ? 1 : 0.3;
+            dots[i].highlight = d.highlight;
+            dots[i].caption = d.caption;
+            dots[i].cluster = d.cluster;
+          });
+        }
+    
+        drawDots(true);
+      }
+    
+      canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) / canvas.width;
+        const my = (e.clientY - rect.top) / canvas.height;
+    
+        let found = false;
+        dots.forEach(dot => {
+          const dx = dot.x - mx;
+          const dy = dot.y - my;
+          if (Math.sqrt(dx * dx + dy * dy) < 0.01) {
+            tooltip.style.left = `${e.clientX + 10}px`;
+            tooltip.style.top = `${e.clientY + 10}px`;
+            tooltip.innerHTML = dot.caption;
+            tooltip.style.display = "block";
+            found = true;
+          }
+        });
+        if (!found) tooltip.style.display = "none";
+      });
+
+      function setupScroll() {
+        console.log("Setting up scrollama...");
+        
+        const scroller = scrollama();
+        
+        try {
+          scroller
+            .setup({
+              step: ".step",
+              offset: 0.5,
+              parent: scrolly,
+              debug: true
+            })
+            .onStepEnter((response) => {
+              console.log("Step entered:", response);
+              const el = response.element;
+              const content = el.querySelector(".step-content")?.innerHTML || el.innerHTML;
+              
+              // Show scroll text, overlay box, and canvas when we reach the visualization section
+              if (el.dataset.frame === "0") {
+                scrollText.classList.add('visible');
+                overlayBox.classList.add('visible');
+                canvas.classList.add('visible');
+                resizeCanvas();
+              }
+              
+              scrollText.innerHTML = content;
+              updateFrame(+el.dataset.frame);
+            })
+            .onStepExit((response) => {
+              console.log("Step exited:", response);
+              // Hide scroll text, overlay box, and canvas when we leave the visualization section
+              if (response.direction === "up" && response.element.dataset.frame === "0") {
+                scrollText.classList.remove('visible');
+                overlayBox.classList.remove('visible');
+                canvas.classList.remove('visible');
+              }
+            });
+            
+          console.log("Scrollama setup complete");
+        } catch (error) {
+          console.error("Error setting up scrollama:", error);
+        }
+      }
+    
+      fetch("human_clusters_scroll_frames_v3_REBUILT.json")
+        .then(res => res.json())
+        .then(json => {
+          dataFrames = json;
+          console.log("Loaded", dataFrames.length, "frames");
+          resizeCanvas();
+          updateFrame(0);
+          setupScroll();
+        })
+        .catch(err => console.error("Failed to load JSON:", err));
+    
+      window.addEventListener("resize", () => {
+        resizeCanvas();
+        updateFrame(currentFrame);
+      });
+    });
+  </script>
+  <style>
+    /* Change this to adjust the padding between steps */
+    .step {
+      margin-bottom: 70vh;
+    }
+  </style>
+
+  <style>
+    .visualization-link {
+      display: inline-block;
+      margin: 2rem 0;
+      padding: 1rem 2rem;
+      background: #f0f0f0;
+      border-radius: 4px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .visualization-link:hover {
+      background: #e0e0e0;
+    }
+  </style>
+
+</body>
+</html>
